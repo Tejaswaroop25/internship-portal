@@ -43,6 +43,23 @@ Open **[http://127.0.0.1:5000](http://127.0.0.1:5000)** in your browser!
 
 ---
 
+## ☁️ Render Deployment
+This project includes Render deployment configuration.
+
+To deploy:
+1. Push your repo to GitHub.
+2. Create a new Web Service on Render.
+3. Connect the `internship-portal` repo.
+4. Use this service configuration:
+   - Environment: `Python`
+   - Build Command: `pip install -r backend/requirements.txt`
+   - Start Command: `gunicorn backend.app:app --bind 0.0.0.0:$PORT`
+   - Branch: `main`
+
+Render will install dependencies, build the app, and serve your Flask application.
+
+---
+
 ## 🔑 Pre-Seeded Test Credentials
 
 The database is automatically created and seeded with mock accounts on first startup so you can test all features immediately!
