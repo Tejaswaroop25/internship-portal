@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard - InternMatch{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 40px;">
+    <h1 class="page-title">Welcome Back, <span class="text-gradient">{{ current_user.username }}</span></h1>
+    <p class="page-subtitle">Track your application progress and view AI-recommended internship matching opportunities.</p>
+</div>
+
+<!-- Stats Counter -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px;">
+    <div class="glass-card" style="padding: 20px; text-align: center; margin-bottom: 0;">
+        <div style="font-size: 14px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Total Applied</div>
+        <div style="font-size: 36px; font-weight: 800; color: var(--primary);">{{ len(applications) }}</div>
+    </div>
+    <div class="glass-card" style="padding: 20px; text-align: center; margin-bottom: 0;">
+        <div style="font-size: 14px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Accepted</div>
+        <div style="font-size: 36px; font-weight: 800; color: var(--success);">
+            {{ len(applications | selectattr('status', 'equalto', 'Accepted') | list) }}
+        </div>
+    </div>
+    <div class="glass-card" style="padding: 20px; text-align: center; margin-bottom: 0;">
+        <div style="font-size: 14px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Pending Review</div>
+        <div style="font-size: 36px; font-weight: 800; color: var(--warning);">
+            {{ len(applications | selectattr('status', 'equalto', 'Pending') | list) }}
+        </div>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 32px;">
+    <!-- Column 1: Applications tracking -->
+    <div>
+        <div class="glass-card">
+            <h2 class="section-title">Your Active Applications</h2>
+            {% if applications %}
+                <div class="table-responsive">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Internship</th>
+                                <th>Company</th>
+                                <th>Applied On</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for app in applications %}
+                                <tr>
+                                    <td>
+                                        <strong style="font-size: 15px;">{{ app.internship.title }}</strong>
+                                        <div style="font-size: 12px; color: var(--text-muted);">{{ app.internship.location }}</div>
+                                    </td>
+                                    <td>{{ app.internship.company.company_name or app.internship.company.username }}</td>
+                                    <td>{{ app.applied_at.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ app.status.lower() }}">{{ app.status }}</span>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('internships.view_internship', id=app.internship.id) }}" class="btn btn-outline btn-sm">
+                                            <i class="fa-solid fa-eye"></i> Details
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div style="text-align: center; padding: 40px 0; color: var(--text-secondary);">
+                    <i class="fa-regular fa-folder-open" style="font-size: 48px; color: var(--text-muted); margin-bottom: 16px;"></i>
+                    <p>You have not applied for any internships yet.</p>
+                    <a href="{{ url_for('internships.list_internships') }}" class="btn btn-primary btn-sm" style="margin-top: 16px;">Browse Opportunities</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Column 2: Quick Recommendations -->
+    <div>
+        <div class="glass-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 class="section-title" style="margin-bottom: 0;">Top AI Matches</h2>
+                <a href="{{ url_for('recommendations.view_recommendations') }}" style="font-size: 13px; font-weight: 600;">View All</a>
+            </div>
+
+            {% if recommendations %}
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    {% for rec in recommendations %}
+                        <div class="glass-card rec-card {{ rec.ui_class }}" style="padding: 20px; border-radius: var(--radius-sm); margin-bottom: 0; background: rgba(255, 255, 255, 0.02);">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div style="flex: 1; min-width: 0; padding-right: 12px;">
+                                    <h4 style="font-size: 15px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 4px;">{{ rec.internship.title }}</h4>
+                                    <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">{{ rec.internship.company.company_name or rec.internship.company.username }}</div>
+                                </div>
+                                <div class="match-gauge-container" style="width: 44px; height: 44px;">
+                                    <svg viewBox="0 0 36 36" class="circular-chart">
+                                        <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                        <path class="circle" stroke-dasharray="{{ rec.match_score }}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                    </svg>
+                                    <div class="percentage" style="font-size: 11px;">{{ rec.match_score }}%</div>
+                                </div>
+                            </div>
+                            <div class="tags-list" style="margin-top: 10px; margin-bottom: 12px;">
+                                {% for skill in rec.matched_skills[:2] %}
+                                    <span class="tag tag-matched" style="font-size: 10px; padding: 2px 6px;">{{ skill }}</span>
+                                {% endfor %}
+                                {% if len(rec.matched_skills) > 2 %}
+                                    <span class="tag" style="font-size: 10px; padding: 2px 6px; color: var(--text-muted);">+{{ len(rec.matched_skills) - 2 }}</span>
+                                {% endif %}
+                            </div>
+                            <a href="{{ url_for('internships.view_internship', id=rec.internship.id) }}" class="btn btn-secondary btn-sm" style="width: 100%;">
+                                <i class="fa-solid fa-arrow-right"></i> View Match
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div style="text-align: center; padding: 20px 0; color: var(--text-secondary);">
+                    <p style="font-size: 14px;">Add technical skills to your profile to get matched!</p>
+                    <a href="{{ url_for('auth.profile') }}" class="btn btn-outline btn-sm" style="margin-top: 12px;">Edit Skills</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

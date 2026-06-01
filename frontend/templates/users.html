@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}System Users Admin - InternMatch{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 40px;">
+    <h1 class="page-title"><i class="fa-solid fa-user-shield" style="color: var(--primary)"></i> System Administrator Console</h1>
+    <p class="page-subtitle">Platform overview of registered Student portfolios, Corporate listings, and Admin users.</p>
+</div>
+
+<div class="glass-card">
+    <h2 class="section-title">Registered Users Directory</h2>
+    
+    {% if users %}
+        <div class="table-responsive">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>User ID</th>
+                        <th>User Info</th>
+                        <th>Account Role</th>
+                        <th>Portfolio & Profile Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                        <tr>
+                            <td><strong style="color: var(--primary)">#{{ user.id }}</strong></td>
+                            <td>
+                                <strong style="font-size: 15px; display: block;">{{ user.username }}</strong>
+                                <span style="font-size: 13px; color: var(--text-secondary);">{{ user.email }}</span>
+                            </td>
+                            <td>
+                                {% if user.role == 'student' %}
+                                    <span class="badge badge-reviewed"><i class="fa-solid fa-graduation-cap"></i> Student</span>
+                                {% elif user.role == 'company' %}
+                                    <span class="badge badge-accepted"><i class="fa-solid fa-building"></i> Company</span>
+                                {% elif user.role == 'admin' %}
+                                    <span class="badge badge-pending" style="background: rgba(231, 76, 60, 0.15); color: var(--danger); border-color: rgba(231, 76, 60, 0.3);"><i class="fa-solid fa-user-shield"></i> Admin</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if user.role == 'student' %}
+                                    <div style="font-size: 13px;">
+                                        <p style="margin-bottom: 4px;"><strong>Skills:</strong> {{ user.skills or 'None added' }}</p>
+                                        <p style="margin-bottom: 4px; color: var(--text-secondary); max-width: 450px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><strong>Bio:</strong> {{ user.bio or 'N/A' }}</p>
+                                        {% if user.resume_link %}
+                                            <a href="{{ user.resume_link }}" target="_blank" style="text-decoration: underline; font-size: 12px; color: var(--secondary)">
+                                                <i class="fa-solid fa-link"></i> View Resume Link
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                {% elif user.role == 'company' %}
+                                    <div style="font-size: 13px;">
+                                        <p style="margin-bottom: 4px;"><strong>Company Name:</strong> {{ user.company_name or 'N/A' }}</p>
+                                        <p style="margin-bottom: 4px; color: var(--text-secondary); max-width: 450px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><strong>Overview:</strong> {{ user.bio or 'N/A' }}</p>
+                                        {% if user.company_website %}
+                                            <a href="{{ user.company_website }}" target="_blank" style="text-decoration: underline; font-size: 12px; color: var(--secondary)">
+                                                <i class="fa-solid fa-globe"></i> Visit Website
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                {% else %}
+                                    <span style="font-size: 13px; color: var(--text-muted); font-style: italic;">Administrative privileges active.</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 40px 0; color: var(--text-secondary);">
+            <i class="fa-regular fa-user" style="font-size: 56px; color: var(--text-muted); margin-bottom: 16px;"></i>
+            <h3>No users found</h3>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

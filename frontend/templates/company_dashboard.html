@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}Company Dashboard - InternMatch{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+    <div>
+        <h1 class="page-title">Corporate Portal: <span class="text-gradient">{{ current_user.company_name or current_user.username }}</span></h1>
+        <p class="page-subtitle">Publish internships, review applications, and find candidates with matching skills.</p>
+    </div>
+    <a href="{{ url_for('internships.create') }}" class="btn btn-primary">
+        <i class="fa-solid fa-circle-plus"></i> Post New Internship
+    </a>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr; gap: 32px;">
+    
+    <!-- Section 1: Active Postings -->
+    <div class="glass-card">
+        <h2 class="section-title">Your Published Listings</h2>
+        {% if internships %}
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
+                {% for internship in internships %}
+                    <div class="glass-card" style="padding: 24px; margin-bottom: 0; background: rgba(255, 255, 255, 0.01); display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                                <h3 style="font-size: 18px; font-weight: 700;">{{ internship.title }}</h3>
+                                <span class="tag tag-matched" style="font-size: 11px;">{{ internship.location }}</span>
+                            </div>
+                            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px; display: flex; gap: 12px;">
+                                <span><i class="fa-solid fa-clock"></i> {{ internship.duration }}</span>
+                                <span><i class="fa-solid fa-wallet"></i> {{ internship.stipend }}</span>
+                            </p>
+                            <div class="tags-list" style="margin-bottom: 16px;">
+                                {% for skill in internship.requirements.split(',') %}
+                                    {% if skill.strip() %}
+                                        <span class="tag" style="font-size: 10px; padding: 2px 6px;">{{ skill.strip() }}</span>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 10px; border-top: 1px solid var(--border-glass); padding-top: 16px; margin-top: auto;">
+                            <a href="{{ url_for('internships.edit', id=internship.id) }}" class="btn btn-outline btn-sm" style="flex: 1;">
+                                <i class="fa-regular fa-pen-to-square"></i> Edit
+                            </a>
+                            <form action="{{ url_for('internships.delete', id=internship.id) }}" method="POST" class="delete-confirm-form" data-confirm-message="Are you sure you want to delete the job listing for '{{ internship.title }}'? This will permanently delete all student applications for this job." style="flex: 1; display: inline;">
+                                <button type="submit" class="btn btn-danger btn-sm" style="width: 100%;">
+                                    <i class="fa-regular fa-trash-can"></i> Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 40px 0; color: var(--text-secondary);">
+                <i class="fa-solid fa-briefcase" style="font-size: 48px; color: var(--text-muted); margin-bottom: 16px;"></i>
+                <p>You haven't posted any internships yet.</p>
+                <a href="{{ url_for('internships.create') }}" class="btn btn-primary btn-sm" style="margin-top: 16px;">Create Your First Listing</a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Section 2: Applicants Tracker -->
+    <div class="glass-card">
+        <h2 class="section-title">Applicants & Candidate Screening</h2>
+        {% if applications %}
+            <div class="table-responsive">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>Candidate Details</th>
+                            <th>Applied Position</th>
+                            <th>Match Rating</th>
+                            <th>Cover Letter & Pitch</th>
+                            <th>Status</th>
+                            <th style="text-align: right;">Screening Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in applications %}
+                            {% set match = RecommendationService.calculate_match(app.student.skills, app.internship.requirements) %}
+                            <tr>
+                                <td>
+                                    <strong style="font-size: 15px; display: block;">{{ app.student.username }}</strong>
+                                    <span style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 4px;">{{ app.student.email }}</span>
+                                    {% if app.student.resume_link %}
+                                        <a href="{{ app.student.resume_link }}" target="_blank" class="badge badge-reviewed" style="font-size: 11px; padding: 2px 8px;">
+                                            <i class="fa-solid fa-file-pdf"></i> View Resume
+                                        </a>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>{{ app.internship.title }}</strong>
+                                    <div style="font-size: 12px; color: var(--text-muted);">Applied on: {{ app.applied_at.strftime('%Y-%m-%d') }}</div>
+                                </td>
+                                <td>
+                                    {% if match.match_score >= 80 %}
+                                        <span class="badge badge-accepted" style="font-weight: 700;">{{ match.match_score }}% Match</span>
+                                    {% elif match.match_score >= 50 %}
+                                        <span class="badge badge-reviewed" style="font-weight: 700;">{{ match.match_score }}% Match</span>
+                                    {% elif match.match_score >= 20 %}
+                                        <span class="badge badge-pending" style="font-weight: 700;">{{ match.match_score }}% Match</span>
+                                    {% else %}
+                                        <span class="badge badge-rejected" style="font-weight: 700;">{{ match.match_score }}% Match</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div style="max-width: 250px; font-size: 13px; max-height: 80px; overflow-y: auto; background: rgba(0,0,0,0.15); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-glass);">
+                                        {{ app.cover_letter or "No cover letter provided." }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge badge-{{ app.status.lower() }}">{{ app.status }}</span>
+                                </td>
+                                <td style="text-align: right; vertical-align: middle;">
+                                    {% if app.status == 'Pending' or app.status == 'Reviewed' %}
+                                        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                                            <form action="{{ url_for('applications.update_status', id=app.id) }}" method="POST" style="display: inline;">
+                                                <input type="hidden" name="status" value="Accepted">
+                                                <button type="submit" class="btn btn-primary btn-sm" style="background: var(--success); box-shadow: none; padding: 6px 12px;">
+                                                    <i class="fa-solid fa-check"></i> Accept
+                                                </button>
+                                            </form>
+                                            <form action="{{ url_for('applications.update_status', id=app.id) }}" method="POST" style="display: inline;">
+                                                <input type="hidden" name="status" value="Rejected">
+                                                <button type="submit" class="btn btn-danger btn-sm" style="box-shadow: none; padding: 6px 12px;">
+                                                    <i class="fa-solid fa-xmark"></i> Reject
+                                                </button>
+                                            </form>
+                                        </div>
+                                    {% else %}
+                                        <span style="color: var(--text-muted); font-size: 13px;">Screening Complete</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 40px 0; color: var(--text-secondary);">
+                <i class="fa-regular fa-envelope-open" style="font-size: 48px; color: var(--text-muted); margin-bottom: 16px;"></i>
+                <p>No applications have been received for your listings yet.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Apply for {{ internship.title }} - InternMatch{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 24px;">
+    <a href="{{ url_for('internships.view_internship', id=internship.id) }}" style="font-size: 15px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
+        <i class="fa-solid fa-arrow-left-long"></i> Back to Internship Details
+    </a>
+</div>
+
+<div style="display: flex; justify-content: center; align-items: center; padding: 20px 0;">
+    <div class="glass-card" style="width: 100%; max-width: 600px; padding: 40px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+            <i class="fa-solid fa-paper-plane" style="font-size: 36px; color: var(--secondary); margin-bottom: 12px; filter: drop-shadow(0 0 10px var(--secondary-glow));"></i>
+            <h2 class="section-title" style="border: none; padding: 0; text-align: center; display: inline-block; margin-bottom: 6px;">Submit Application</h2>
+            <p style="color: var(--text-secondary); font-size: 14px;">Applying for <strong>{{ internship.title }}</strong> at <strong>{{ internship.company.company_name or internship.company.username }}</strong></p>
+        </div>
+
+        <div class="glass-card" style="padding: 20px; background: rgba(255, 255, 255, 0.02); margin-bottom: 24px; border-radius: var(--radius-sm);">
+            <h4 style="font-size: 15px; margin-bottom: 4px;">Job Quick Info</h4>
+            <ul style="list-style: none; font-size: 13px; color: var(--text-secondary); display: flex; flex-direction: column; gap: 4px;">
+                <li><i class="fa-solid fa-location-dot" style="width: 16px;"></i> Location: {{ internship.location }}</li>
+                <li><i class="fa-solid fa-wallet" style="width: 16px;"></i> Stipend: {{ internship.stipend }}</li>
+                <li><i class="fa-regular fa-clock" style="width: 16px;"></i> Duration: {{ internship.duration }}</li>
+            </ul>
+        </div>
+
+        <form action="{{ url_for('applications.apply', internship_id=internship.id) }}" method="POST">
+            <div class="form-group">
+                <label class="form-label" for="cover_letter">Cover Letter / Pitch</label>
+                <textarea id="cover_letter" name="cover_letter" class="form-control" placeholder="Introduce yourself! Write a small pitch describing why your skills are a great fit for this internship..." required style="min-height: 180px;"></textarea>
+            </div>
+
+            <!-- Profile review reminder banner -->
+            <div style="font-size: 13px; color: var(--text-muted); background: rgba(255, 255, 255, 0.01); border: 1px dashed var(--border-glass); padding: 12px; border-radius: 6px; margin-bottom: 24px; display: flex; gap: 10px; align-items: flex-start;">
+                <i class="fa-solid fa-circle-info" style="color: var(--secondary); margin-top: 2px;"></i>
+                <p>Note: We will automatically attach your active profile skills, bio, and resume link to this application so the company can evaluate your fit.</p>
+            </div>
+
+            <div style="display: flex; gap: 16px;">
+                <a href="{{ url_for('internships.view_internship', id=internship.id) }}" class="btn btn-outline" style="flex: 1;">Cancel</a>
+                <button type="submit" class="btn btn-primary" style="flex: 2; font-size: 16px; padding: 14px;">
+                    <i class="fa-solid fa-paper-plane"></i> Submit Application
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

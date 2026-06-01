@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - Internship{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 40px;">
+    <h1 class="page-title">Manage Your <span class="text-gradient">Profile</span></h1>
+    <p class="page-subtitle">Update your personal details, credentials, and recruitment tags.</p>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 32px; align-items: start;">
+    
+    <!-- Left Column: User Summary Card -->
+    <div>
+        <div class="glass-card" style="text-align: center;">
+            <div style="width: 90px; height: 90px; border-radius: 50%; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; box-shadow: 0 4px 20px var(--primary-glow);">
+                {% if current_user.role == 'student' %}
+                    <i class="fa-solid fa-graduation-cap" style="font-size: 40px; color: white;"></i>
+                {% elif current_user.role == 'company' %}
+                    <i class="fa-solid fa-building" style="font-size: 40px; color: white;"></i>
+                {% else %}
+                    <i class="fa-solid fa-user-shield" style="font-size: 40px; color: white;"></i>
+                {% endif %}
+            </div>
+            <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 4px;">{{ current_user.username }}</h2>
+            <div class="badge badge-reviewed" style="text-transform: uppercase; font-size: 11px; margin-bottom: 16px;">
+                {{ current_user.role }}
+            </div>
+            
+            <div style="text-align: left; font-size: 14px; border-top: 1px solid var(--border-glass); padding-top: 20px; margin-top: 10px;">
+                <p style="margin-bottom: 8px; color: var(--text-secondary);">
+                    <i class="fa-regular fa-envelope" style="width: 20px;"></i> {{ current_user.email }}
+                </p>
+                <p style="color: var(--text-secondary);">
+                    <i class="fa-solid fa-bolt" style="width: 20px;"></i> Engine Status: <strong style="color: var(--success)">Active</strong>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Profile Form -->
+    <div>
+        <div class="glass-card">
+            <h2 class="section-title">Edit Profile Information</h2>
+            
+            <form action="{{ url_for('auth.profile') }}" method="POST">
+                {% if current_user.role == 'student' %}
+                    <!-- Student Specific Fields -->
+                    
+                    <!-- Dynamic Skills Tag Widget -->
+                    <div class="form-group">
+                        <label class="form-label" for="skills-input-raw">Your Technical Skills</label>
+                        <input type="text" id="skills-input-raw" class="form-control" placeholder="Type a skill (e.g. Python, SQLite) and press Enter or comma">
+                        <div class="tags-list" id="skills-tags-container" style="margin-top: 12px;"></div>
+                        <!-- Hidden value that stores comma-separated values -->
+                        <input type="hidden" id="hidden-skills-value" name="skills" value="{{ current_user.skills or '' }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="resume_link">Resume PDF URL Link</label>
+                        <div style="position: relative;">
+                            <i class="fa-solid fa-link" style="position: absolute; left: 16px; top: 15px; color: var(--text-muted);"></i>
+                            <input type="url" id="resume_link" name="resume_link" class="form-control" placeholder="https://drive.google.com/..." value="{{ current_user.resume_link or '' }}" style="padding-left: 45px;">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="experience">Past Experience Details</label>
+                        <textarea id="experience" name="experience" class="form-control" placeholder="Detail any hackathons, open-source work, or previous jobs...">{{ current_user.experience or '' }}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="bio">Biography / Pitch</label>
+                        <textarea id="bio" name="bio" class="form-control" placeholder="Brief pitch about yourself, interests, and career goals...">{{ current_user.bio or '' }}</textarea>
+                    </div>
+
+                {% elif current_user.role == 'company' %}
+                    <!-- Company Specific Fields -->
+
+                    <div class="form-group">
+                        <label class="form-label" for="company_name">Company Name</label>
+                        <div style="position: relative;">
+                            <i class="fa-solid fa-building" style="position: absolute; left: 16px; top: 15px; color: var(--text-muted);"></i>
+                            <input type="text" id="company_name" name="company_name" class="form-control" placeholder="Apex Technology Solutions" value="{{ current_user.company_name or '' }}" style="padding-left: 45px;">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="company_website">Company Website URL</label>
+                        <div style="position: relative;">
+                            <i class="fa-solid fa-globe" style="position: absolute; left: 16px; top: 15px; color: var(--text-muted);"></i>
+                            <input type="url" id="company_website" name="company_website" class="form-control" placeholder="https://apextech.example.com" value="{{ current_user.company_website or '' }}" style="padding-left: 45px;">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="company_description">Company Overview / Description</label>
+                        <textarea id="company_description" name="company_description" class="form-control" placeholder="Tell students about your company's mission, workspace, and core focus...">{{ current_user.bio or '' }}</textarea>
+                    </div>
+                {% else %}
+                    <!-- Admin View message -->
+                    <div style="padding: 20px; color: var(--text-secondary); text-align: center;">
+                        <p>Platform Administrator accounts do not require profile details updates.</p>
+                    </div>
+                {% endif %}
+
+                {% if current_user.role != 'admin' %}
+                    <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 16px; padding: 14px; margin-top: 10px;">
+                        <i class="fa-solid fa-floppy-disk"></i> Save Profile Details
+                    </button>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Premium Internship Matching and Application Portal. Connect student profiles to companies using smart compatibility recommendations.">
+    <title>{% block title %}InternMatch - AI Matching Portal{% endblock %}</title>
+    <!-- Fonts & Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Main Style Sheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+    <!-- Dynamic Toast Notification broadcast -->
+    <div class="alert-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category if category != 'error' else 'danger' }}" role="alert">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            {% if category == 'success' %}
+                                <i class="fa-solid fa-circle-check" style="color: var(--success)"></i>
+                            {% elif category == 'danger' or category == 'error' %}
+                                <i class="fa-solid fa-circle-exclamation" style="color: var(--danger)"></i>
+                            {% elif category == 'warning' %}
+                                <i class="fa-solid fa-triangle-exclamation" style="color: var(--warning)"></i>
+                            {% else %}
+                                <i class="fa-solid fa-circle-info" style="color: var(--info)"></i>
+                            {% endif %}
+                            <span>{{ message }}</span>
+                        </div>
+                        <button type="button" class="alert-close" aria-label="Close">&times;</button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Glassmorphism Navigation Bar -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="/" class="nav-brand">
+                <i class="fa-solid fa-bolt text-gradient"></i>
+                <span>Intern<strong style="font-weight: 800;">Match</strong></span>
+            </a>
+            
+            {% if current_user.is_authenticated %}
+                <ul class="nav-links">
+                    {% if current_user.role == 'student' %}
+                        <li><a href="{{ url_for('auth.student_dashboard') }}" class="nav-link">Dashboard</a></li>
+                        <li><a href="{{ url_for('internships.list_internships') }}" class="nav-link">Browse Jobs</a></li>
+                        <li><a href="{{ url_for('recommendations.view_recommendations') }}" class="nav-link"><i class="fa-solid fa-wand-magic-sparkles" style="color: var(--secondary)"></i> AI Matches</a></li>
+                        <li><a href="{{ url_for('applications.list_applications') }}" class="nav-link">Applications</a></li>
+                    {% elif current_user.role == 'company' %}
+                        <li><a href="{{ url_for('auth.company_dashboard') }}" class="nav-link">Company Dashboard</a></li>
+                        <li><a href="{{ url_for('internships.create') }}" class="nav-link"><i class="fa-solid fa-circle-plus"></i> Post Job</a></li>
+                        <li><a href="{{ url_for('applications.list_applications') }}" class="nav-link">Applicants</a></li>
+                    {% elif current_user.role == 'admin' %}
+                        <li><a href="{{ url_for('auth.users_admin') }}" class="nav-link">User Admin</a></li>
+                        <li><a href="{{ url_for('applications.list_applications') }}" class="nav-link">All Applications</a></li>
+                    {% endif %}
+                    <li><a href="{{ url_for('auth.profile') }}" class="nav-link"><i class="fa-regular fa-user"></i> Profile</a></li>
+                </ul>
+
+                <div class="nav-user">
+                    <span class="user-badge">{{ current_user.username }}</span>
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn-outline btn-sm"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
+                </div>
+            {% else %}
+                <div class="nav-user">
+                    <a href="{{ url_for('auth.login') }}" class="nav-link">Sign In</a>
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-sm">Create Account</a>
+                </div>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- Main Dynamic Application Screen -->
+    <main class="main-content container">
+        {% if error_code %}
+            <!-- Generic Visual Error Card for 404 / 500 triggers -->
+            <div class="glass-card" style="text-align: center; max-width: 600px; margin: 80px auto;">
+                <h1 style="font-size: 80px; font-weight: 800; background: linear-gradient(135deg, var(--primary) 0%, var(--danger) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px;">{{ error_code }}</h1>
+                <h2 style="margin-bottom: 12px;">Oops! Page Alert</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 24px;">{{ error_message }}</p>
+                <a href="/" class="btn btn-primary"><i class="fa-solid fa-house"></i> Back to Safety</a>
+            </div>
+        {% else %}
+            {% block content %}{% endblock %}
+        {% endif %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 InternMatch Matching Engine. Crafted for elite developers & companies.</p>
+        </div>
+    </footer>
+
+    <!-- Core Javascript Behaviors -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

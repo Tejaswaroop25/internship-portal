@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}AI Matching & Recommendations - InternMatch{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 40px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 20px;">
+    <div>
+        <h1 class="page-title"><i class="fa-solid fa-wand-magic-sparkles" style="color: var(--secondary)"></i> AI Compatibility Matcher</h1>
+        <p class="page-subtitle">Personalized internship recommendation engine matching your skill inventory to recruiter listings.</p>
+    </div>
+    
+    <div class="glass-card" style="padding: 12px 24px; margin-bottom: 0; background: rgba(var(--primary-hue), 0.05); border-color: var(--primary);">
+        <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary); display: block;">Your Active Skill Set:</span>
+        <div class="tags-list" style="margin-top: 4px;">
+            {% if current_user.skills %}
+                {% for skill in current_user.skills.split(',') %}
+                    {% if skill.strip() %}
+                        <span class="tag tag-matched" style="font-size: 11px;">{{ skill.strip() }}</span>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <span style="font-size: 12px; color: var(--text-muted); font-style: italic;">No skills added yet.</span>
+            {% endif %}
+            <a href="{{ url_for('auth.profile') }}" style="font-size: 11px; font-weight: 700; color: var(--secondary); margin-left: 8px; display: inline-flex; align-items: center; gap: 4px;">
+                <i class="fa-regular fa-pen-to-square"></i> Edit
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="recommendation-grid">
+    {% if recommendations %}
+        {% for rec in recommendations %}
+            <div class="glass-card rec-card {{ rec.ui_class }}" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+                
+                <div>
+                    <!-- Header with Gauge and Title -->
+                    <div class="rec-header">
+                        <div style="flex: 1; min-width: 0; padding-right: 16px;">
+                            <h3 style="font-size: 19px; font-weight: 700; margin-bottom: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ rec.internship.title }}">{{ rec.internship.title }}</h3>
+                            <h4 style="font-size: 14px; color: var(--text-secondary); font-weight: 600; margin-bottom: 12px;">
+                                <i class="fa-regular fa-building"></i> {{ rec.internship.company.company_name or rec.internship.company.username }}
+                            </h4>
+                            <span class="badge badge-reviewed" style="font-size: 11px;">{{ rec.internship.location }}</span>
+                        </div>
+                        
+                        <div class="match-gauge-container">
+                            <svg viewBox="0 0 36 36" class="circular-chart">
+                                <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                <path class="circle" stroke-dasharray="{{ rec.match_score }}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            </svg>
+                            <div class="percentage">{{ rec.match_score }}%</div>
+                        </div>
+                    </div>
+
+                    <!-- Match details metadata -->
+                    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px; display: flex; gap: 16px;">
+                        <span><i class="fa-regular fa-clock"></i> {{ rec.internship.duration }}</span>
+                        <span><i class="fa-solid fa-wallet"></i> {{ rec.internship.stipend }}</span>
+                    </p>
+
+                    <!-- Technical Skills Breakdown analysis -->
+                    <div style="margin-bottom: 20px; border-top: 1px solid var(--border-glass); padding-top: 16px;">
+                        <span style="font-size: 12px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">Skill Breakdown</span>
+                        
+                        <!-- Matched Skills -->
+                        {% if rec.matched_skills %}
+                            <div style="margin-bottom: 8px;">
+                                <span style="font-size: 11px; color: var(--success); font-weight: 600; display: block; margin-bottom: 4px;"><i class="fa-solid fa-square-check"></i> Matched ({{ len(rec.matched_skills) }}):</span>
+                                <div class="tags-list">
+                                    {% for skill in rec.matched_skills %}
+                                        <span class="tag tag-matched" style="font-size: 10px; padding: 2px 8px;">{{ skill }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <!-- Missing Skills -->
+                        {% if rec.missing_skills %}
+                            <div>
+                                <span style="font-size: 11px; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 4px;"><i class="fa-solid fa-circle-minus"></i> Missing ({{ len(rec.missing_skills) }}):</span>
+                                <div class="tags-list">
+                                    {% for skill in rec.missing_skills %}
+                                        <span class="tag tag-missing" style="font-size: 10px; padding: 2px 8px;">{{ skill }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Footer Action Buttons -->
+                <div style="border-top: 1px solid var(--border-glass); padding-top: 16px; margin-top: auto;">
+                    <a href="{{ url_for('internships.view_internship', id=rec.internship.id) }}" class="btn btn-secondary" style="width: 100%;">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> View Analysis & Apply
+                    </a>
+                </div>
+
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="glass-card" style="grid-column: 1 / -1; text-align: center; padding: 60px 0; color: var(--text-secondary);">
+            <i class="fa-solid fa-robot" style="font-size: 56px; color: var(--text-muted); margin-bottom: 16px;"></i>
+            <h3>No internships currently published</h3>
+            <p style="margin-top: 8px;">Check back later as recruiter postings get registered!</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

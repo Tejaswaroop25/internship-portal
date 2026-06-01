@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Applications - InternMatch{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 40px;">
+    <h1 class="page-title">Applications Tracker</h1>
+    <p class="page-subtitle">Review, manage, and filter application portfolios across the platform.</p>
+</div>
+
+<div class="glass-card">
+    <h2 class="section-title">
+        {% if current_user.role == 'student' %}
+            Your Submitted Applications
+        {% elif current_user.role == 'company' %}
+            Applications Received for Your Listings
+        {% elif current_user.role == 'admin' %}
+            Platform Applications Directory (Admin Overview)
+        {% endif %}
+    </h2>
+
+    {% if applications %}
+        <div class="table-responsive">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        {% if current_user.role != 'student' %}
+                            <th>Candidate Details</th>
+                        {% endif %}
+                        <th>Internship Position</th>
+                        {% if current_user.role != 'company' %}
+                            <th>Posting Company</th>
+                        {% endif %}
+                        <th>Date Submitted</th>
+                        <th>Compatibility Match</th>
+                        <th>Cover Letter Summary</th>
+                        <th>Application Status</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in applications %}
+                        {% set match = RecommendationService.calculate_match(app.student.skills, app.internship.requirements) %}
+                        <tr>
+                            {% if current_user.role != 'student' %}
+                                <td>
+                                    <strong style="font-size: 15px; display: block;">{{ app.student.username }}</strong>
+                                    <span style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 2px;">{{ app.student.email }}</span>
+                                    {% if app.student.resume_link %}
+                                        <a href="{{ app.student.resume_link }}" target="_blank" style="font-size: 11px; text-decoration: underline;">
+                                            <i class="fa-solid fa-file-pdf"></i> Resume Link
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            {% endif %}
+                            <td>
+                                <strong>{{ app.internship.title }}</strong>
+                                <div style="font-size: 12px; color: var(--text-muted);">{{ app.internship.location }}</div>
+                            </td>
+                            {% if current_user.role != 'company' %}
+                                <td>{{ app.internship.company.company_name or app.internship.company.username }}</td>
+                            {% endif %}
+                            <td>{{ app.applied_at.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                {% if match.match_score >= 80 %}
+                                    <span class="badge badge-accepted" style="font-weight: 700;">{{ match.match_score }}% Match</span>
+                                {% elif match.match_score >= 50 %}
+                                    <span class="badge badge-reviewed" style="font-weight: 700;">{{ match.match_score }}% Match</span>
+                                {% elif match.match_score >= 20 %}
+                                    <span class="badge badge-pending" style="font-weight: 700;">{{ match.match_score }}% Match</span>
+                                {% else %}
+                                    <span class="badge badge-rejected" style="font-weight: 700;">{{ match.match_score }}% Match</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div style="max-width: 220px; font-size: 13px; max-height: 70px; overflow-y: auto; background: rgba(0,0,0,0.15); padding: 8px; border-radius: 6px; border: 1px solid var(--border-glass);">
+                                    {{ app.cover_letter or "No cover letter provided." }}
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge badge-{{ app.status.lower() }}">{{ app.status }}</span>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('internships.view_internship', id=app.internship.id) }}" class="btn btn-outline btn-sm" style="padding: 6px 12px;">
+                                    <i class="fa-solid fa-circle-info"></i> View Job
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 60px 0; color: var(--text-secondary);">
+            <i class="fa-regular fa-envelope-open" style="font-size: 56px; color: var(--text-muted); margin-bottom: 16px;"></i>
+            <h3>No applications found</h3>
+            <p style="margin-top: 8px; font-size: 14px;">There are currently no active applications recorded in this view.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Post Internship - InternMatch{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 24px;">
+    <a href="{{ url_for('auth.company_dashboard') }}" style="font-size: 15px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
+        <i class="fa-solid fa-arrow-left-long"></i> Back to Company Dashboard
+    </a>
+</div>
+
+<div style="display: flex; justify-content: center; align-items: center; padding: 20px 0;">
+    <div class="glass-card" style="width: 100%; max-width: 700px; padding: 40px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+            <i class="fa-solid fa-circle-plus" style="font-size: 36px; color: var(--primary); margin-bottom: 12px; filter: drop-shadow(0 0 10px var(--primary-glow));"></i>
+            <h2 class="section-title" style="border: none; padding: 0; text-align: center; display: inline-block; margin-bottom: 6px;">Publish Internship</h2>
+            <p style="color: var(--text-secondary); font-size: 14px;">Fill out the details below to recruit student talent</p>
+        </div>
+
+        <form action="{{ url_for('internships.create') }}" method="POST">
+            <div class="form-group">
+                <label class="form-label" for="title">Internship Title</label>
+                <div style="position: relative;">
+                    <i class="fa-solid fa-briefcase" style="position: absolute; left: 16px; top: 15px; color: var(--text-muted);"></i>
+                    <input type="text" id="title" name="title" class="form-control" placeholder="e.g. Full Stack Web Developer Intern" required style="padding-left: 45px;">
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                    <label class="form-label" for="location">Location / Office Type</label>
+                    <div style="position: relative;">
+                        <i class="fa-solid fa-location-dot" style="position: absolute; left: 16px; top: 15px; color: var(--text-muted);"></i>
+                        <input type="text" id="location" name="location" class="form-control" placeholder="e.g. Remote, San Francisco, CA" required style="padding-left: 45px;">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="stipend">Stipend Details</label>
+                    <div style="position: relative;">
+                        <i class="fa-solid fa-wallet" style="position: absolute; left: 16px; top: 15px; color: var(--text-muted);"></i>
+                        <input type="text" id="stipend" name="stipend" class="form-control" placeholder="e.g. $1,500/month, Unpaid" required style="padding-left: 45px;">
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                    <label class="form-label" for="duration">Duration</label>
+                    <div style="position: relative;">
+                        <i class="fa-regular fa-clock" style="position: absolute; left: 16px; top: 15px; color: var(--text-muted);"></i>
+                        <input type="text" id="duration" name="duration" class="form-control" placeholder="e.g. 3 Months, 6 Months" required style="padding-left: 45px;">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <!-- Help label details -->
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="requirements">Required Technical Skills (Comma Separated)</label>
+                <div style="position: relative;">
+                    <i class="fa-solid fa-code" style="position: absolute; left: 16px; top: 15px; color: var(--text-muted);"></i>
+                    <input type="text" id="requirements" name="requirements" class="form-control" placeholder="e.g. Python, Flask, SQLite, HTML, CSS" required style="padding-left: 45px;">
+                </div>
+                <span style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: block;">Important: Separate skills with commas so our recommendation engine can parse them correctly.</span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="description">Role Description & Responsibilities</label>
+                <textarea id="description" name="description" class="form-control" placeholder="Provide detailed information about the job duties, training programs, company environment, and expectations..." required></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 16px; padding: 14px; margin-top: 20px;">
+                <i class="fa-solid fa-circle-check"></i> Publish Listing
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

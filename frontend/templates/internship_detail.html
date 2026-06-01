@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}{{ internship.title }} - InternMatch{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 24px;">
+    <a href="{{ url_for('internships.list_internships') }}" style="font-size: 15px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;">
+        <i class="fa-solid fa-arrow-left-long"></i> Back to Browse Listings
+    </a>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 32px; align-items: start;">
+    
+    <!-- Left Column: Details -->
+    <div>
+        <div class="glass-card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 16px;">
+                <div>
+                    <h1 class="page-title" style="font-size: 32px; margin-bottom: 4px;">{{ internship.title }}</h1>
+                    <h3 style="font-size: 18px; color: var(--secondary); font-weight: 600;">
+                        <i class="fa-regular fa-building"></i> {{ internship.company.company_name or internship.company.username }}
+                    </h3>
+                </div>
+                <span class="badge badge-reviewed" style="font-size: 13px; padding: 6px 16px;">{{ internship.location }}</span>
+            </div>
+
+            <!-- Stats Bar -->
+            <div style="display: flex; gap: 24px; border-top: 1px solid var(--border-glass); border-bottom: 1px solid var(--border-glass); padding: 16px 0; margin-bottom: 30px; flex-wrap: wrap;">
+                <div>
+                    <span style="font-size: 12px; color: var(--text-muted); display: block; font-weight: 600; text-transform: uppercase;">Stipend Amount</span>
+                    <strong style="font-size: 18px; color: var(--text-primary);"><i class="fa-solid fa-wallet" style="color: var(--success)"></i> {{ internship.stipend or 'Unpaid' }}</strong>
+                </div>
+                <div>
+                    <span style="font-size: 12px; color: var(--text-muted); display: block; font-weight: 600; text-transform: uppercase;">Duration Period</span>
+                    <strong style="font-size: 18px; color: var(--text-primary);"><i class="fa-regular fa-clock" style="color: var(--secondary)"></i> {{ internship.duration or '3 Months' }}</strong>
+                </div>
+                <div>
+                    <span style="font-size: 12px; color: var(--text-muted); display: block; font-weight: 600; text-transform: uppercase;">Date Published</span>
+                    <strong style="font-size: 18px; color: var(--text-primary);"><i class="fa-regular fa-calendar"></i> {{ internship.created_at.strftime('%Y-%m-%d') }}</strong>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 30px;">
+                <h3 class="section-title" style="font-size: 20px;">Role Description</h3>
+                <p style="color: var(--text-secondary); white-space: pre-line; line-height: 1.8;">{{ internship.description }}</p>
+            </div>
+
+            <div>
+                <h3 class="section-title" style="font-size: 20px;">Skill Requirements</h3>
+                <div class="tags-list" style="margin-bottom: 24px;">
+                    {% for skill in internship.requirements.split(',') %}
+                        {% if skill.strip() %}
+                            {% if current_user.role == 'student' and skill.strip().lower() in RecommendationService.parse_skills(current_user.skills) %}
+                                <span class="tag tag-matched" style="font-size: 13px; padding: 6px 14px; border-radius: 8px;">
+                                    <i class="fa-solid fa-check-double"></i> {{ skill.strip() }}
+                                </span>
+                            {% else %}
+                                <span class="tag" style="font-size: 13px; padding: 6px 14px; border-radius: 8px;">{{ skill.strip() }}</span>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if current_user.role == 'student' %}
+                {% set match = RecommendationService.calculate_match(current_user.skills, internship.requirements) %}
+                <div class="glass-card" style="margin-top: 30px; border-color: var(--primary); background: rgba(var(--primary-hue), 0.05);">
+                    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
+                        <div>
+                            <h4 style="font-size: 18px; font-weight: 700; margin-bottom: 4px;">AI Skill Affinity Score</h4>
+                            <p style="font-size: 14px; color: var(--text-secondary);">You match <strong>{{ len(match.matched_skills) }}</strong> out of <strong>{{ len(match.matched_skills) + len(match.missing_skills) }}</strong> specified skills.</p>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 16px;">
+                            <div class="match-gauge-container" style="width: 54px; height: 54px;">
+                                <svg viewBox="0 0 36 36" class="circular-chart">
+                                    <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                    <path class="circle" stroke-dasharray="{{ match.match_score }}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" style="stroke: {% if match.match_score >= 80 %}var(--success){% elif match.match_score >= 50 %}var(--secondary){% else %}var(--warning){% endif %};" />
+                                </svg>
+                                <div class="percentage" style="font-size: 12px;">{{ match.match_score }}%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Right Column: Company Overview & Apply -->
+    <div>
+        <div class="glass-card">
+            <h3 class="section-title" style="font-size: 18px; margin-bottom: 16px;">Company Overview</h3>
+            <h4 style="font-size: 16px; margin-bottom: 8px;">{{ internship.company.company_name or internship.company.username }}</h4>
+            <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 16px;">{{ internship.company.bio or 'No company description provided.' }}</p>
+            
+            {% if internship.company.company_website %}
+                <a href="{{ internship.company.company_website }}" target="_blank" class="btn btn-outline btn-sm" style="width: 100%; margin-bottom: 24px;">
+                    <i class="fa-solid fa-globe"></i> Visit Website
+                </a>
+            {% endif %}
+            
+            <hr style="border: 0; height: 1px; background: var(--border-glass); margin-bottom: 24px;">
+
+            {% if current_user.role == 'student' %}
+                <a href="{{ url_for('applications.apply', internship_id=internship.id) }}" class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 16px;">
+                    <i class="fa-solid fa-paper-plane"></i> Apply for Job
+                </a>
+            {% elif current_user.role == 'company' and internship.company_id == current_user.id %}
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <a href="{{ url_for('internships.edit', id=internship.id) }}" class="btn btn-secondary" style="width: 100%;">
+                        <i class="fa-regular fa-pen-to-square"></i> Modify Listing
+                    </a>
+                    <form action="{{ url_for('internships.delete', id=internship.id) }}" method="POST" class="delete-confirm-form" data-confirm-message="Are you sure you want to delete the job listing for '{{ internship.title }}'? This will permanently delete all student applications for this job.">
+                        <button type="submit" class="btn btn-danger" style="width: 100%;">
+                            <i class="fa-regular fa-trash-can"></i> Delete Listing
+                        </button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
