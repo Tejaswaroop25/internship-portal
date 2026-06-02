@@ -32,7 +32,6 @@
                             <th>Posting Company</th>
                         {% endif %}
                         <th>Date Submitted</th>
-                        <th>Compatibility Match</th>
                         <th>Cover Letter Summary</th>
                         <th>Application Status</th>
                         <th>Details</th>
@@ -40,7 +39,6 @@
                 </thead>
                 <tbody>
                     {% for app in applications %}
-                        {% set match = RecommendationService.calculate_match(app.student.skills, app.internship.requirements) %}
                         <tr>
                             {% if current_user.role != 'student' %}
                                 <td>
@@ -61,17 +59,6 @@
                                 <td>{{ app.internship.company.company_name or app.internship.company.username }}</td>
                             {% endif %}
                             <td>{{ app.applied_at.strftime('%Y-%m-%d') }}</td>
-                            <td>
-                                {% if match.match_score >= 80 %}
-                                    <span class="badge badge-accepted" style="font-weight: 700;">{{ match.match_score }}% Match</span>
-                                {% elif match.match_score >= 50 %}
-                                    <span class="badge badge-reviewed" style="font-weight: 700;">{{ match.match_score }}% Match</span>
-                                {% elif match.match_score >= 20 %}
-                                    <span class="badge badge-pending" style="font-weight: 700;">{{ match.match_score }}% Match</span>
-                                {% else %}
-                                    <span class="badge badge-rejected" style="font-weight: 700;">{{ match.match_score }}% Match</span>
-                                {% endif %}
-                            </td>
                             <td>
                                 <div style="max-width: 220px; font-size: 13px; max-height: 70px; overflow-y: auto; background: rgba(0,0,0,0.15); padding: 8px; border-radius: 6px; border: 1px solid var(--border-glass);">
                                     {{ app.cover_letter or "No cover letter provided." }}

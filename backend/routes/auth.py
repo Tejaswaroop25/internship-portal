@@ -108,16 +108,7 @@ def student_dashboard():
     # Get student's applications
     applications = Application.query.filter_by(student_id=current_user.id).all()
     
-    # Import recommendation engine to render matching internships on dashboard
-    from backend.services.recommendation_service import RecommendationService
-    recommendations = RecommendationService.get_recommendations(current_user)
-    
-    # Take top 3 for dashboard quick view
-    top_recommendations = recommendations[:3]
-    
-    return render_template('student_dashboard.html', 
-                           applications=applications, 
-                           recommendations=top_recommendations)
+    return render_template('student_dashboard.html', applications=applications)
 
 @auth_bp.route('/company/dashboard')
 @login_required

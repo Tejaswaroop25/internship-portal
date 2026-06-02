@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Premium Internship Matching and Application Portal. Connect student profiles to companies using smart compatibility recommendations.">
-    <title>{% block title %}InternMatch - AI Matching Portal{% endblock %}</title>
+    <title>{% block title %}InternMatch{% endblock %}</title>
     <!-- Fonts & Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Main Style Sheet -->
@@ -51,7 +51,6 @@
                     {% if current_user.role == 'student' %}
                         <li><a href="{{ url_for('auth.student_dashboard') }}" class="nav-link">Dashboard</a></li>
                         <li><a href="{{ url_for('internships.list_internships') }}" class="nav-link">Browse Jobs</a></li>
-                        <li><a href="{{ url_for('recommendations.view_recommendations') }}" class="nav-link"><i class="fa-solid fa-wand-magic-sparkles" style="color: var(--secondary)"></i> AI Matches</a></li>
                         <li><a href="{{ url_for('applications.list_applications') }}" class="nav-link">Applications</a></li>
                     {% elif current_user.role == 'company' %}
                         <li><a href="{{ url_for('auth.company_dashboard') }}" class="nav-link">Company Dashboard</a></li>

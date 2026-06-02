@@ -50,38 +50,13 @@
                 <div class="tags-list" style="margin-bottom: 24px;">
                     {% for skill in internship.requirements.split(',') %}
                         {% if skill.strip() %}
-                            {% if current_user.role == 'student' and skill.strip().lower() in RecommendationService.parse_skills(current_user.skills) %}
-                                <span class="tag tag-matched" style="font-size: 13px; padding: 6px 14px; border-radius: 8px;">
-                                    <i class="fa-solid fa-check-double"></i> {{ skill.strip() }}
-                                </span>
-                            {% else %}
-                                <span class="tag" style="font-size: 13px; padding: 6px 14px; border-radius: 8px;">{{ skill.strip() }}</span>
-                            {% endif %}
+                            <span class="tag" style="font-size: 13px; padding: 6px 14px; border-radius: 8px;">{{ skill.strip() }}</span>
                         {% endif %}
                     {% endfor %}
                 </div>
             </div>
 
-            {% if current_user.role == 'student' %}
-                {% set match = RecommendationService.calculate_match(current_user.skills, internship.requirements) %}
-                <div class="glass-card" style="margin-top: 30px; border-color: var(--primary); background: rgba(var(--primary-hue), 0.05);">
-                    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
-                        <div>
-                            <h4 style="font-size: 18px; font-weight: 700; margin-bottom: 4px;">AI Skill Affinity Score</h4>
-                            <p style="font-size: 14px; color: var(--text-secondary);">You match <strong>{{ len(match.matched_skills) }}</strong> out of <strong>{{ len(match.matched_skills) + len(match.missing_skills) }}</strong> specified skills.</p>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 16px;">
-                            <div class="match-gauge-container" style="width: 54px; height: 54px;">
-                                <svg viewBox="0 0 36 36" class="circular-chart">
-                                    <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                    <path class="circle" stroke-dasharray="{{ match.match_score }}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" style="stroke: {% if match.match_score >= 80 %}var(--success){% elif match.match_score >= 50 %}var(--secondary){% else %}var(--warning){% endif %};" />
-                                </svg>
-                                <div class="percentage" style="font-size: 12px;">{{ match.match_score }}%</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            {% endif %}
+            
         </div>
     </div>
 

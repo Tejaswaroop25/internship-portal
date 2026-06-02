@@ -66,11 +66,7 @@
                         <div class="tags-list">
                             {% for skill in internship.requirements.split(',') %}
                                 {% if skill.strip() %}
-                                    {% if current_user.role == 'student' and skill.strip().lower() in RecommendationService.parse_skills(current_user.skills) %}
-                                        <span class="tag tag-matched" style="font-size: 11px;">{{ skill.strip() }}</span>
-                                    {% else %}
-                                        <span class="tag" style="font-size: 11px;">{{ skill.strip() }}</span>
-                                    {% endif %}
+                                    <span class="tag" style="font-size: 11px;">{{ skill.strip() }}</span>
                                 {% endif %}
                             {% endfor %}
                         </div>

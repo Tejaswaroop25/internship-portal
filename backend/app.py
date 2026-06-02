@@ -38,21 +38,17 @@ def create_app():
     from backend.routes.auth import auth_bp
     from backend.routes.internships import internships_bp
     from backend.routes.applications import applications_bp
-    from backend.routes.recommendations import recommendations_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(internships_bp)
     app.register_blueprint(applications_bp)
-    app.register_blueprint(recommendations_bp)
 
     @app.context_processor
     def inject_helpers():
-        from backend.services.recommendation_service import RecommendationService
         return dict(
             str=str,
             len=len,
             isinstance=isinstance,
-            RecommendationService=RecommendationService
         )
 
     with app.app_context():
